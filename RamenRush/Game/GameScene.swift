@@ -231,7 +231,7 @@ class GameScene: SKScene {
     private func positionForLocation(_ location: CGPoint) -> GridPosition? {
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2
-        let startY = -size.height * 0.15 + totalGridWidth / 2
+        let startY = -size.height * 0.25 + totalGridWidth / 2
 
         let relativeX = location.x - startX
         let relativeY = startY - location.y
