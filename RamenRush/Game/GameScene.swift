@@ -54,9 +54,9 @@ class GameScene: SKScene {
         // Negative Y is UP, Positive Y is DOWN
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
-        // Position grid in upper-center portion - use more negative value to move UP
-        // startY is the TOP of the grid (row 0)
-        let startY = -size.height * 0.35 + cellSize / 2
+        // Position grid in center-upper area, visible between HUD and order cards
+        // startY is the TOP of the grid (row 0), positioned above center
+        let startY = -size.height * 0.1 + cellSize / 2
 
         gridNodes = []
 
@@ -164,7 +164,7 @@ class GameScene: SKScene {
 
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
-        let startY = -size.height * 0.35 + cellSize / 2
+        let startY = -size.height * 0.1 + cellSize / 2
 
         let x = startX + CGFloat(cursorPosition.column) * (cellSize + gridSpacing)
         let y = startY - CGFloat(cursorPosition.row) * (cellSize + gridSpacing)
@@ -233,7 +233,7 @@ class GameScene: SKScene {
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2
         // Match the grid setup position
-        let startY = -size.height * 0.35 + cellSize / 2
+        let startY = -size.height * 0.1 + cellSize / 2
         
         let relativeX = location.x - startX
         let relativeY = startY - location.y
