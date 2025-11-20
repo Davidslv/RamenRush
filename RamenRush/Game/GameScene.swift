@@ -54,7 +54,8 @@ class GameScene: SKScene {
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
         // Position grid in upper-center portion (negative Y is up from center)
-        let startY = -size.height * 0.15 + cellSize / 2
+        // Move it higher to be above order cards
+        let startY = -size.height * 0.25 + cellSize / 2
 
         gridNodes = []
 
@@ -86,7 +87,7 @@ class GameScene: SKScene {
         border.lineWidth = 2
         border.fillColor = .clear
         node.addChild(border)
-        
+
         // Create label node for emoji (will be updated in updateGridDisplay)
         let emojiLabel = SKLabelNode()
         emojiLabel.name = "emoji"
@@ -144,7 +145,7 @@ class GameScene: SKScene {
                         emojiLabel.text = ""
                     }
                 }
-                
+
                 // Update cell background
                 if cell.ingredient != nil {
                     node.color = SKColor.white

@@ -68,7 +68,7 @@ struct GameView: View {
                     .background(Color(hex: "#FFF8E7").opacity(0.9))
 
                     Spacer()
-
+                    
                     // Order Cards (at bottom like original)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {
@@ -80,6 +80,7 @@ struct GameView: View {
                     }
                     .frame(height: 100)
                     .background(Color(hex: "#FFF8E7").opacity(0.95))
+                    .padding(.bottom, 20)
 
                     // Bottom Controls
                     HStack(spacing: 20) {

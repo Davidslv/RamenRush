@@ -15,7 +15,7 @@ struct SimpleOrderCard: View {
             // Ingredient emoji
             Text(order.ingredient.emoji)
                 .font(.system(size: 40))
-            
+
             // Quantity
             Text(order.displayText)
                 .font(.headline)
