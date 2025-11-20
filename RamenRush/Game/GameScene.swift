@@ -50,9 +50,11 @@ class GameScene: SKScene {
 
     private func setupGrid() {
         // Center the 4x4 grid on screen, leave room for orders at bottom
+        // With anchorPoint at (0.5, 0.5), coordinates are relative to center
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
-        let startY = size.height * 0.3 - cellSize / 2  // Position grid in upper portion
+        // Position grid in upper-center portion (negative Y is up from center)
+        let startY = -size.height * 0.15 + cellSize / 2
 
         gridNodes = []
 
@@ -208,14 +210,14 @@ class GameScene: SKScene {
     private func positionForLocation(_ location: CGPoint) -> GridPosition? {
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2
-        let startY = totalGridWidth / 2
-
+        let startY = -size.height * 0.15 + totalGridWidth / 2
+        
         let relativeX = location.x - startX
         let relativeY = startY - location.y
-
+        
         let col = Int(relativeX / (cellSize + gridSpacing))
         let row = Int(relativeY / (cellSize + gridSpacing))
-
+        
         let position = GridPosition(row, col)
         return position.isValid(for: gridSize) ? position : nil
     }
