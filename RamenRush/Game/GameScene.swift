@@ -288,7 +288,7 @@ class GameScene: SKScene {
 
             let sequence = SKAction.sequence([scaleUp, fadeOut, scaleDown, fadeIn])
             node.run(sequence)
-            
+
             // Add particle effect
             addParticleEffect(at: node.position)
         }
@@ -299,19 +299,19 @@ class GameScene: SKScene {
             self.updateGridDisplay()
         }
     }
-    
+
     private func addParticleEffect(at position: CGPoint) {
         // Create simple particle effect
         let particle = SKSpriteNode(color: SKColor(hex: "#FFB300"), size: CGSize(width: 8, height: 8))
         particle.position = position
         particle.zPosition = 200
-        
+
         // Animate particle
         let moveUp = SKAction.moveBy(x: 0, y: 30, duration: 0.3)
         let fadeOut = SKAction.fadeOut(withDuration: 0.3)
         let remove = SKAction.removeFromParent()
         let sequence = SKAction.sequence([SKAction.group([moveUp, fadeOut]), remove])
-        
+
         addChild(particle)
         particle.run(sequence)
     }

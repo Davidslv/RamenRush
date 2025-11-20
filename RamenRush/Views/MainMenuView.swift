@@ -10,16 +10,16 @@ import SwiftUI
 struct MainMenuView: View {
     @State private var showGame = false
     @State private var showSettings = false
-    
+
     var body: some View {
         ZStack {
             // Background
             Color(hex: "#FFF8E7")
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 30) {
                 Spacer()
-                
+
                 // Title
                 VStack(spacing: 10) {
                     Text("🍜")
@@ -32,9 +32,9 @@ struct MainMenuView: View {
                         .foregroundColor(Color(hex: "#5C4033"))
                         .italic()
                 }
-                
+
                 Spacer()
-                
+
                 // Menu Buttons
                 VStack(spacing: 20) {
                     MenuButton(
@@ -44,7 +44,7 @@ struct MainMenuView: View {
                     ) {
                         showGame = true
                     }
-                    
+
                     MenuButton(
                         title: "Settings",
                         icon: "gearshape.fill",
@@ -54,20 +54,26 @@ struct MainMenuView: View {
                     }
                 }
                 .padding(.horizontal, 40)
-                
+
                 Spacer()
-                
+
                 // Footer
                 Text("Premium Game - No Ads")
                     .font(.caption)
                     .foregroundColor(Color(hex: "#8B6F47"))
-                
+
                 Spacer()
             }
         }
+        #if os(iOS)
         .fullScreenCover(isPresented: $showGame) {
             GameView()
         }
+        #else
+        .sheet(isPresented: $showGame) {
+            GameView()
+        }
+        #endif
         .sheet(isPresented: $showSettings) {
             SettingsView()
         }
@@ -79,7 +85,7 @@ struct MenuButton: View {
     let icon: String
     let color: Color
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             HStack(spacing: 12) {
@@ -101,33 +107,43 @@ struct MenuButton: View {
 
 struct SettingsView: View {
     @Environment(\.dismiss) var dismiss
-    
+
     var body: some View {
         NavigationView {
             ZStack {
                 Color(hex: "#FFF8E7")
                     .ignoresSafeArea()
-                
+
                 VStack(spacing: 20) {
                     Text("Settings")
                         .font(.title)
                         .padding()
-                    
+
                     // Placeholder for settings
                     Text("Settings coming soon!")
                         .foregroundColor(.secondary)
-                    
+
                     Spacer()
                 }
             }
             .navigationTitle("Settings")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
                 }
+                #else
+                ToolbarItem(placement: .automatic) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+                #endif
             }
         }
     }

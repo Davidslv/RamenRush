@@ -12,21 +12,21 @@ struct PauseMenuView: View {
     @Environment(\.dismiss) var dismiss
     let onResume: () -> Void
     let onQuit: () -> Void
-    
+
     var body: some View {
         ZStack {
             Color.black.opacity(0.7)
                 .ignoresSafeArea()
-            
+
             VStack(spacing: 20) {
                 Text("⏸")
                     .font(.system(size: 60))
-                
+
                 Text("Paused")
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
-                
+
                 VStack(spacing: 15) {
                     Button(action: {
                         onResume()
@@ -44,7 +44,7 @@ struct PauseMenuView: View {
                         .background(Color(hex: "#66BB6A"))
                         .cornerRadius(10)
                     }
-                    
+
                     Button(action: {
                         onQuit()
                         isPresented = false

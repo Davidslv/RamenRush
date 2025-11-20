@@ -97,10 +97,10 @@ class GameState: ObservableObject {
         if let coinsReward = order.reward.coins {
             coins += coinsReward
         }
-        
+
         // Generate new order
         generateNewOrder()
-        
+
         // Reset after a moment (for UI to display)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.lastOrderStarsEarned = 0

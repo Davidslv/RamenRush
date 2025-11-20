@@ -53,7 +53,7 @@ struct GameView: View {
                         if let order = gameState.currentOrder {
                             OrderCard(order: order)
                         }
-                        
+
                         // Pause Button
                         Button(action: {
                             showPauseMenu = true
@@ -152,7 +152,7 @@ struct GameView: View {
                         }
                     )
                 }
-                
+
                 if showOrderComplete && gameState.lastOrderStarsEarned > 0 {
                     OrderCompleteView(starsEarned: gameState.lastOrderStarsEarned) {
                         showOrderComplete = false
