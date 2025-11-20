@@ -782,6 +782,172 @@ enum IngredientCategory {
 }
 ```
 
+### Gravity-Based Refill System
+
+When ingredients are cleared from the grid, the remaining ingredients drop down and new ones enter from the top:
+
+```swift
+/// Represents an ingredient dropping from one position to another
+struct IngredientDrop {
+    let ingredient: IngredientType
+    let fromPosition: GridPosition
+    let toPosition: GridPosition
+    
+    /// Distance dropped (in grid cells)
+    var dropDistance: Int {
+        toPosition.row - fromPosition.row
+    }
+    
+    /// Whether this ingredient came from above the grid (preview)
+    var isFromPreview: Bool {
+        fromPosition.row < 0
+    }
+}
+
+// GameGrid methods for gravity system:
+
+/// Queue of upcoming ingredients for each column (preview system)
+@Published private(set) var upcomingIngredients: [[IngredientType]] = []
+
+/// Initialize the upcoming ingredients queue for preview
+func initializeUpcomingQueue(with availableIngredients: [IngredientType], queueSize: Int = 4)
+
+/// Get the next preview ingredient for a column (what's coming from the top)
+func previewIngredient(for column: Int) -> IngredientType?
+
+/// Apply gravity: drop all ingredients down and fill from top with new ones
+/// Returns the drop animations needed (from position, to position)
+func applyGravity(with availableIngredients: [IngredientType]) -> [IngredientDrop]
+
+/// Clear matched positions and apply gravity in one operation
+func clearAndApplyGravity(
+    _ matches: [LineMatch],
+    with availableIngredients: [IngredientType]
+) -> [IngredientDrop]
+```
+
+**Visual Representation:**
+```
+   Preview Row (half-visible)
+   [🍜] [🥚] [🥩] [🥬]  ← Players see hints of what's coming
+   ─────────────────────
+   [   ] [   ] [🍜] [   ]  ← Row 0 (new ingredients enter here)
+   [🍜] [🥚] [🥬] [🍜]  ← Row 1
+   [🥬] [🍜] [🥚] [🥬]  ← Row 2  
+   [🍜] [🥬] [🍜] [🥚]  ← Row 3 (ingredients drop down)
+```
+
+When a match is cleared:
+1. Matched cells are removed
+2. Ingredients above drop down (gravity)
+3. New ingredients enter from preview row
+4. Preview row refills from queue
+
+### Line Selection & Contiguous Run Detection
+
+The player selects a full **row** (horizontal) or **column** (vertical). The game then finds all **contiguous runs** of the same ingredient within that line:
+
+**Example - Selecting Row 2:**
+```
+Row 2: [🍜] [🍜] [🥚] [🍜]
+       └─┬─┘    └──┬──┘
+         │         │
+      Run 1     Run 2
+     (🍜 x2)    (🍜 x1)
+```
+
+The game finds two runs:
+- Run 1: 2 ramen (positions 0-1)
+- Run 2: 1 ramen (position 3)
+
+If there's an order for **🍜 x2**, Run 1 matches and is cleared.
+
+**Matching Logic:**
+```swift
+/// Find all contiguous runs of the same ingredient in a line
+func findContiguousRuns(in positions: [GridPosition]) -> [LineMatch] {
+    var runs: [LineMatch] = []
+    var currentIngredient: IngredientType?
+    var currentRun: [GridPosition] = []
+    
+    for pos in positions {
+        guard let cell = grid.cell(at: pos),
+              let ingredient = cell.ingredient else {
+            // Empty cell - end current run
+            if !currentRun.isEmpty, let ing = currentIngredient {
+                runs.append(LineMatch(positions: currentRun, ingredient: ing))
+            }
+            currentRun = []
+            currentIngredient = nil
+            continue
+        }
+        
+        if ingredient == currentIngredient {
+            currentRun.append(pos)
+        } else {
+            // Save previous run, start new one
+            if !currentRun.isEmpty, let ing = currentIngredient {
+                runs.append(LineMatch(positions: currentRun, ingredient: ing))
+            }
+            currentRun = [pos]
+            currentIngredient = ingredient
+        }
+    }
+    
+    // Save final run
+    if !currentRun.isEmpty, let ing = currentIngredient {
+        runs.append(LineMatch(positions: currentRun, ingredient: ing))
+    }
+    
+    return runs
+}
+```
+
+### Star Earning (Automatic 4-in-a-row Cascade)
+
+Stars are earned **automatically** when a 4-in-a-row forms after gravity is applied. This creates a chain reaction system:
+
+**Game Flow:**
+```
+1. Player selects row/column
+2. Match contiguous run to fulfill order (x1, x2, or x3)
+3. Clear matched cells → fulfill order
+4. Apply gravity (elements drop down)
+5. New elements enter from preview
+6. AUTO-CHECK: Scan grid for any 4-in-a-row
+   - If found: Award ★, clear those 4 cells
+   - Apply gravity again
+   - Repeat check (cascade continues)
+7. When no more 4-in-a-rows exist, player continues
+```
+
+**Key Points:**
+- Orders are **x1, x2, x3 only** (player-controlled matches)
+- Stars come from **automatic 4-in-a-row detection** (passive bonus)
+- Multiple cascades can occur in sequence
+- Each 4-in-a-row awards 1 star
+
+```swift
+// In GameState.processCascades()
+while true {
+    let matches = grid.findAllMatches(minLength: 4)
+    
+    if matches.isEmpty {
+        break  // No more cascades
+    }
+    
+    // Award stars for each 4-in-a-row found
+    for match in matches {
+        stars += 1
+    }
+    
+    // Clear and apply gravity (may create more 4-in-a-rows)
+    grid.clearAndApplyGravity(matches, with: availableIngredients)
+}
+```
+
+This encourages players to think strategically about how their matches will affect the board after gravity, potentially setting up cascade combos!
+
 ### Progression System
 
 ```swift

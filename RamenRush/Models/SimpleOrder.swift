@@ -9,6 +9,7 @@ import Foundation
 
 /// Simple order matching the original Pico-8 game
 /// Each order is just: ingredient + quantity (x1, x2, or x3)
+/// Stars are earned separately through automatic 4-in-a-row cascade detection
 struct SimpleOrder: Identifiable, Codable {
     let id: UUID
     let ingredient: IngredientType
@@ -56,7 +57,7 @@ class OrderManager: ObservableObject {
         orders = []
         for _ in 0..<min(count, maxOrders) {
             let ingredient = availableIngredients.randomElement() ?? .ramen
-            let quantity = Int.random(in: 1...3)
+            let quantity = Int.random(in: 1...3)  // Orders are x1, x2, x3 only
             addOrder(SimpleOrder(ingredient: ingredient, quantity: quantity))
         }
     }

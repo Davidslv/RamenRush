@@ -17,6 +17,7 @@ class GameScene: SKScene {
     private let grid: GameGrid
     private let gameState: GameState
     private var gridNodes: [[SKSpriteNode]] = []
+    private var previewNodes: [SKSpriteNode] = []  // Preview row above grid
     private var cursorNode: SKSpriteNode?
     private var cursorPosition: GridPosition = GridPosition(0, 0)
     private var isHorizontal: Bool = true
@@ -38,6 +39,7 @@ class GameScene: SKScene {
 
     override func didMove(to view: SKView) {
         setupScene()
+        setupPreviewRow()
         setupGrid()
         setupCursor()
         setupObservers()
@@ -46,6 +48,70 @@ class GameScene: SKScene {
     private func setupScene() {
         backgroundColor = SKColor(hex: "#FFF8E7") // Cream Background
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
+    }
+    
+    private func setupPreviewRow() {
+        // Preview row shows half-visible ingredients coming from the top
+        let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
+        let totalGridHeight = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
+        let startX = -totalGridWidth / 2 + cellSize / 2
+        
+        // Position preview row above the grid
+        let topMargin: CGFloat = 80
+        let bottomMargin: CGFloat = 220
+        let gridCenterY = (topMargin - bottomMargin) / 2
+        let gridTopY = gridCenterY + totalGridHeight / 2
+        
+        // Preview is positioned above the grid top row
+        // Add full cell height + extra spacing to clear the top row completely
+        let previewY = gridTopY + cellSize + gridSpacing + cellSize / 2
+        
+        previewNodes = []
+        
+        for col in 0..<gridSize {
+            let x = startX + CGFloat(col) * (cellSize + gridSpacing)
+            
+            // Create preview cell (half visible)
+            let node = SKSpriteNode(color: .white, size: CGSize(width: cellSize, height: cellSize / 2))
+            node.position = CGPoint(x: x, y: previewY)
+            node.name = "preview_\(col)"
+            node.alpha = 0.6  // Semi-transparent to show it's a preview
+            
+            // Clip the bottom half (only show top half of ingredient)
+            let cropNode = SKCropNode()
+            let maskNode = SKSpriteNode(color: .white, size: CGSize(width: cellSize, height: cellSize / 2))
+            maskNode.position = CGPoint(x: 0, y: cellSize / 4)
+            cropNode.maskNode = maskNode
+            
+            // Add emoji label for preview
+            let emojiLabel = SKLabelNode()
+            emojiLabel.name = "preview_emoji"
+            emojiLabel.fontSize = cellSize * 0.6
+            emojiLabel.verticalAlignmentMode = .center
+            emojiLabel.horizontalAlignmentMode = .center
+            emojiLabel.position = CGPoint(x: 0, y: -cellSize / 4)  // Offset so only top shows
+            emojiLabel.zPosition = 10
+            node.addChild(emojiLabel)
+            
+            addChild(node)
+            previewNodes.append(node)
+        }
+        
+        updatePreviewDisplay()
+    }
+    
+    private func updatePreviewDisplay() {
+        let previews = gameState.getPreviewIngredients()
+        
+        for (col, node) in previewNodes.enumerated() {
+            if let emojiLabel = node.childNode(withName: "preview_emoji") as? SKLabelNode {
+                if col < previews.count, let ingredient = previews[col] {
+                    emojiLabel.text = ingredient.emoji
+                } else {
+                    emojiLabel.text = ""
+                }
+            }
+        }
     }
 
     private func setupGrid() {
@@ -184,8 +250,21 @@ class GameScene: SKScene {
         let gridCenterY = (topMargin - bottomMargin) / 2
         let startY = gridCenterY + totalGridHeight / 2
 
-        let x = startX + CGFloat(cursorPosition.column) * (cellSize + gridSpacing)
-        let y = startY - CGFloat(cursorPosition.row) * (cellSize + gridSpacing)
+        // Position cursor based on orientation
+        // For horizontal: center on the row, span all columns
+        // For vertical: center on the column, span all rows
+        let x: CGFloat
+        let y: CGFloat
+        
+        if isHorizontal {
+            // Center horizontally (middle of row)
+            x = 0  // Center of grid
+            y = startY - CGFloat(cursorPosition.row) * (cellSize + gridSpacing)
+        } else {
+            // Center vertically (middle of column)
+            x = startX + CGFloat(cursorPosition.column) * (cellSize + gridSpacing)
+            y = gridCenterY  // Center of grid
+        }
 
         cursor.position = CGPoint(x: x, y: y)
 
@@ -271,87 +350,264 @@ class GameScene: SKScene {
     private func selectLine(at position: GridPosition) {
         grid.deselectAll()
 
+        // Get the full row or column based on orientation
         let positions: [GridPosition]
         if isHorizontal {
-            positions = position.horizontalLine(length: 4, gridSize: gridSize)
+            // Select entire row
+            positions = (0..<gridSize).map { GridPosition(position.row, $0) }
         } else {
-            positions = position.verticalLine(length: 4, gridSize: gridSize)
+            // Select entire column
+            positions = (0..<gridSize).map { GridPosition($0, position.column) }
         }
 
-        // Select all positions in line
+        // Select all positions in the line for visual feedback
         for pos in positions {
             grid.selectCell(at: pos)
         }
 
-        // Check for matches
-        checkMatches(at: positions)
+        // Find contiguous runs within this line and try to match orders
+        findAndProcessMatches(in: positions)
 
         updateGridDisplay()
     }
-
-    private func checkMatches(at positions: [GridPosition]) {
-        guard positions.count == 4,
-              let firstCell = grid.cell(at: positions[0]),
-              let ingredient = firstCell.ingredient else {
-            // Deselect if invalid selection
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                self.grid.deselectAll()
-                self.updateGridDisplay()
+    
+    /// Find contiguous runs of ingredients in a line and process matches
+    private func findAndProcessMatches(in positions: [GridPosition]) {
+        // Find all contiguous runs in this line
+        let runs = findContiguousRuns(in: positions)
+        
+        // Try to find a run that matches an order
+        // Prioritize runs that contain the cursor position (what the user clicked)
+        var matchedRun: LineMatch?
+        
+        // First, try to find a matching run that contains the cursor position
+        for run in runs {
+            let containsCursor = run.positions.contains(cursorPosition)
+            if containsCursor {
+                if gameState.orderManager.fulfillOrder(with: run) != nil {
+                    matchedRun = run
+                    break
+                }
             }
-            return
         }
-
-        // Check if all positions have the same ingredient
-        let allMatch = positions.allSatisfy { pos in
-            grid.cell(at: pos)?.ingredient == ingredient
+        
+        // If no run containing cursor matches, try any run
+        if matchedRun == nil {
+            for run in runs {
+                if gameState.orderManager.fulfillOrder(with: run) != nil {
+                    matchedRun = run
+                    break
+                }
+            }
         }
-
-        if allMatch {
-            // Create a match (always length 4 for 4x4 grid)
-            let match = LineMatch(positions: positions, ingredient: ingredient)
-
-            // Check if this match fulfills any order
-            if gameState.processMatch(match) {
-                // Animate match
-                animateMatch(positions)
+        
+        if let match = matchedRun {
+            // Highlight only the matched portion
+            grid.deselectAll()
+            for pos in match.positions {
+                grid.selectCell(at: pos)
+            }
+            updateGridDisplay()
+            
+            // Process the match
+            if let result = gameState.processMatch(match) {
+                // Animate the full sequence: match → drops → cascades
+                animateMatchResult(result)
             } else {
-                // Match doesn't fulfill any order - show error feedback
+                // Shouldn't happen since we checked fulfillOrder above
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     self.grid.deselectAll()
                     self.updateGridDisplay()
                 }
             }
         } else {
-            // Deselect after a delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            // No matching run found - show feedback and deselect
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 self.grid.deselectAll()
                 self.updateGridDisplay()
             }
         }
     }
+    
+    /// Find all contiguous runs of the same ingredient in a line
+    private func findContiguousRuns(in positions: [GridPosition]) -> [LineMatch] {
+        var runs: [LineMatch] = []
+        var currentIngredient: IngredientType?
+        var currentRun: [GridPosition] = []
+        
+        for pos in positions {
+            guard let cell = grid.cell(at: pos),
+                  let ingredient = cell.ingredient else {
+                // Empty cell - end current run
+                if !currentRun.isEmpty, let ing = currentIngredient {
+                    runs.append(LineMatch(positions: currentRun, ingredient: ing))
+                }
+                currentRun = []
+                currentIngredient = nil
+                continue
+            }
+            
+            if ingredient == currentIngredient {
+                // Continue current run
+                currentRun.append(pos)
+            } else {
+                // Different ingredient - save previous run and start new one
+                if !currentRun.isEmpty, let ing = currentIngredient {
+                    runs.append(LineMatch(positions: currentRun, ingredient: ing))
+                }
+                currentRun = [pos]
+                currentIngredient = ingredient
+            }
+        }
+        
+        // Save final run
+        if !currentRun.isEmpty, let ing = currentIngredient {
+            runs.append(LineMatch(positions: currentRun, ingredient: ing))
+        }
+        
+        return runs
+    }
 
-    private func animateMatch(_ positions: [GridPosition]) {
-        // Enhanced animation with particles
+    private func animateMatchResult(_ result: MatchResult) {
+        // Phase 1: Animate initial match clearing
+        animateClearCells(result.clearedPositions) {
+            // Phase 2: Animate initial drops
+            self.animateDrops(result.initialDrops) {
+                // Phase 3: Animate cascades sequentially
+                self.animateCascades(result.cascades, index: 0)
+            }
+        }
+    }
+    
+    private func animateClearCells(_ positions: [GridPosition], completion: @escaping () -> Void) {
         for position in positions {
             guard let node = gridNodes[safe: position.row]?[safe: position.column] else { continue }
 
-            // Scale and fade animation
+            // Scale and fade animation, then reset
             let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
             let fadeOut = SKAction.fadeOut(withDuration: 0.2)
-            let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
-            let fadeIn = SKAction.fadeIn(withDuration: 0.1)
+            let reset = SKAction.group([
+                SKAction.scale(to: 1.0, duration: 0.0),
+                SKAction.fadeIn(withDuration: 0.0)
+            ])
 
-            let sequence = SKAction.sequence([scaleUp, fadeOut, scaleDown, fadeIn])
+            let sequence = SKAction.sequence([scaleUp, fadeOut, reset])
             node.run(sequence)
 
             // Add particle effect
             addParticleEffect(at: node.position)
         }
 
-        // Update grid after animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            self.grid.deselectAll()
-            self.updateGridDisplay()
+        // Call completion after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            completion()
+        }
+    }
+    
+    private func animateCascades(_ cascades: [CascadeRound], index: Int) {
+        guard index < cascades.count else {
+            // All cascades complete - finalize
+            grid.deselectAll()
+            updateGridDisplay()
+            updatePreviewDisplay()
+            return
+        }
+        
+        let cascade = cascades[index]
+        
+        // Show star earned effect
+        showStarEarnedEffect(count: cascade.matches.count)
+        
+        // Animate cascade matches clearing
+        var allPositions: [GridPosition] = []
+        for match in cascade.matches {
+            allPositions.append(contentsOf: match.positions)
+        }
+        
+        // Highlight cascade matches with special color
+        for pos in allPositions {
+            if let node = gridNodes[safe: pos.row]?[safe: pos.column] {
+                // Flash gold for cascade
+                let flashGold = SKAction.colorize(with: SKColor(hex: "#FFB300"), colorBlendFactor: 0.7, duration: 0.1)
+                let flashBack = SKAction.colorize(withColorBlendFactor: 0, duration: 0.1)
+                node.run(SKAction.sequence([flashGold, flashBack]))
+            }
+        }
+        
+        // Clear cascade cells
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            self.animateClearCells(allPositions) {
+                // Animate drops from this cascade
+                self.animateDrops(cascade.drops) {
+                    // Continue to next cascade
+                    self.animateCascades(cascades, index: index + 1)
+                }
+            }
+        }
+    }
+    
+    private func showStarEarnedEffect(count: Int) {
+        // Create star burst effect for each star earned
+        for i in 0..<count {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.1) {
+                let star = SKLabelNode(text: "⭐")
+                star.fontSize = 40
+                star.position = CGPoint(x: 0, y: 0)  // Center of screen
+                star.zPosition = 500
+                
+                // Animate star floating up and fading
+                let moveUp = SKAction.moveBy(x: CGFloat.random(in: -50...50), y: 100, duration: 0.8)
+                let fadeOut = SKAction.fadeOut(withDuration: 0.8)
+                let scale = SKAction.scale(to: 1.5, duration: 0.8)
+                let remove = SKAction.removeFromParent()
+                
+                let group = SKAction.group([moveUp, fadeOut, scale])
+                let sequence = SKAction.sequence([group, remove])
+                
+                self.addChild(star)
+                star.run(sequence)
+            }
+        }
+    }
+
+    private func animateDrops(_ drops: [IngredientDrop], completion: @escaping () -> Void) {
+        let dropDuration: TimeInterval = 0.15
+        
+        // Update grid display first (this sets final positions)
+        updateGridDisplay()
+        updatePreviewDisplay()
+        
+        // Animate each drop
+        for drop in drops {
+            guard let node = gridNodes[safe: drop.toPosition.row]?[safe: drop.toPosition.column] else { continue }
+            
+            // Calculate visual drop distance
+            let dropPixels = CGFloat(drop.dropDistance) * (cellSize + gridSpacing)
+            
+            // Start position (above final position)
+            let finalPosition = node.position
+            let startPosition = CGPoint(x: finalPosition.x, y: finalPosition.y + dropPixels)
+            
+            // Animate from start to final
+            node.position = startPosition
+            node.alpha = 1.0
+            
+            let moveDown = SKAction.move(to: finalPosition, duration: dropDuration * Double(max(1, drop.dropDistance)))
+            moveDown.timingMode = .easeIn
+            
+            // Add bounce effect at the end
+            let bounceUp = SKAction.moveBy(x: 0, y: 4, duration: 0.05)
+            let bounceDown = SKAction.moveBy(x: 0, y: -4, duration: 0.05)
+            
+            let sequence = SKAction.sequence([moveDown, bounceUp, bounceDown])
+            node.run(sequence)
+        }
+        
+        // Call completion after longest drop animation
+        let maxDropDistance = drops.map { $0.dropDistance }.max() ?? 1
+        let totalDuration = dropDuration * Double(maxDropDistance) + 0.15
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+            completion()
         }
     }
 
@@ -394,7 +650,7 @@ class GameScene: SKScene {
 
     func rotateCursor() {
         isHorizontal.toggle()
-        updateCursorShape()
+        updateCursorPosition()  // Position changes based on orientation
     }
 
     func selectCurrentLine() {
