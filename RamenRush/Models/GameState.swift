@@ -15,6 +15,7 @@ class GameState: ObservableObject {
     @Published var coins: Int = 0
     @Published var currentOrder: Order?
     @Published var availableIngredients: [IngredientType] = []
+    @Published var lastOrderStarsEarned: Int = 0
 
     private let grid: GameGrid
 
@@ -91,13 +92,19 @@ class GameState: ObservableObject {
 
     /// Complete an order and award rewards
     private func completeOrder(_ order: Order) {
+        lastOrderStarsEarned = order.reward.stars
         stars += order.reward.stars
         if let coinsReward = order.reward.coins {
             coins += coinsReward
         }
-
+        
         // Generate new order
         generateNewOrder()
+        
+        // Reset after a moment (for UI to display)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.lastOrderStarsEarned = 0
+        }
     }
 
     /// Advance to next level

@@ -276,24 +276,44 @@ class GameScene: SKScene {
     }
 
     private func animateMatch(_ positions: [GridPosition]) {
-        // Simple animation: scale up, fade out
+        // Enhanced animation with particles
         for position in positions {
             guard let node = gridNodes[safe: position.row]?[safe: position.column] else { continue }
 
-            let scaleUp = SKAction.scale(to: 1.2, duration: 0.15)
-            let fadeOut = SKAction.fadeOut(withDuration: 0.15)
+            // Scale and fade animation
+            let scaleUp = SKAction.scale(to: 1.3, duration: 0.1)
+            let fadeOut = SKAction.fadeOut(withDuration: 0.2)
             let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
             let fadeIn = SKAction.fadeIn(withDuration: 0.1)
 
             let sequence = SKAction.sequence([scaleUp, fadeOut, scaleDown, fadeIn])
             node.run(sequence)
+            
+            // Add particle effect
+            addParticleEffect(at: node.position)
         }
 
         // Update grid after animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
             self.grid.deselectAll()
             self.updateGridDisplay()
         }
+    }
+    
+    private func addParticleEffect(at position: CGPoint) {
+        // Create simple particle effect
+        let particle = SKSpriteNode(color: SKColor(hex: "#FFB300"), size: CGSize(width: 8, height: 8))
+        particle.position = position
+        particle.zPosition = 200
+        
+        // Animate particle
+        let moveUp = SKAction.moveBy(x: 0, y: 30, duration: 0.3)
+        let fadeOut = SKAction.fadeOut(withDuration: 0.3)
+        let remove = SKAction.removeFromParent()
+        let sequence = SKAction.sequence([SKAction.group([moveUp, fadeOut]), remove])
+        
+        addChild(particle)
+        particle.run(sequence)
     }
 
 

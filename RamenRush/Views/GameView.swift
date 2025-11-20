@@ -13,6 +13,7 @@ struct GameView: View {
     @StateObject private var gameState: GameState
     @State private var gameScene: GameScene?
     @State private var showPauseMenu = false
+    @State private var showOrderComplete = false
     @Environment(\.dismiss) var dismiss
 
     init() {
@@ -150,6 +151,17 @@ struct GameView: View {
                             dismiss()
                         }
                     )
+                }
+                
+                if showOrderComplete && gameState.lastOrderStarsEarned > 0 {
+                    OrderCompleteView(starsEarned: gameState.lastOrderStarsEarned) {
+                        showOrderComplete = false
+                    }
+                }
+            }
+            .onChange(of: gameState.lastOrderStarsEarned) { oldValue, newValue in
+                if newValue > 0 {
+                    showOrderComplete = true
                 }
             }
         }
