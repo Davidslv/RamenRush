@@ -76,15 +76,25 @@ class GameScene: SKScene {
     }
 
     private func createCellNode(at position: GridPosition) -> SKSpriteNode {
+        // Create white background cell
         let node = SKSpriteNode(color: .white, size: CGSize(width: cellSize, height: cellSize))
         node.name = "cell_\(position.row)_\(position.column)"
 
         // Add border
         let border = SKShapeNode(rect: CGRect(x: -cellSize/2, y: -cellSize/2, width: cellSize, height: cellSize))
         border.strokeColor = SKColor(hex: "#5C4033") // Dark Wood
-        border.lineWidth = 1
+        border.lineWidth = 2
         border.fillColor = .clear
         node.addChild(border)
+        
+        // Create label node for emoji (will be updated in updateGridDisplay)
+        let emojiLabel = SKLabelNode()
+        emojiLabel.name = "emoji"
+        emojiLabel.fontSize = cellSize * 0.6
+        emojiLabel.verticalAlignmentMode = .center
+        emojiLabel.horizontalAlignmentMode = .center
+        emojiLabel.zPosition = 10
+        node.addChild(emojiLabel)
 
         return node
     }
@@ -125,9 +135,19 @@ class GameScene: SKScene {
                 guard let cell = grid.cell(at: position),
                       let node = gridNodes[safe: row]?[safe: col] else { continue }
 
-                // Update cell color based on ingredient
-                if let ingredient = cell.ingredient {
-                    node.color = SKColor(ingredient.placeholderColor)
+                // Update emoji label
+                if let emojiLabel = node.childNode(withName: "emoji") as? SKLabelNode {
+                    if let ingredient = cell.ingredient {
+                        emojiLabel.text = ingredient.emoji
+                        emojiLabel.alpha = cell.isSelected ? 0.7 : 1.0
+                    } else {
+                        emojiLabel.text = ""
+                    }
+                }
+                
+                // Update cell background
+                if cell.ingredient != nil {
+                    node.color = SKColor.white
                     node.alpha = cell.isSelected ? 0.7 : 1.0
                 } else {
                     node.color = SKColor(hex: "#F8F9FA") // Rice White
@@ -211,13 +231,13 @@ class GameScene: SKScene {
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2
         let startY = -size.height * 0.15 + totalGridWidth / 2
-        
+
         let relativeX = location.x - startX
         let relativeY = startY - location.y
-        
+
         let col = Int(relativeX / (cellSize + gridSpacing))
         let row = Int(relativeY / (cellSize + gridSpacing))
-        
+
         let position = GridPosition(row, col)
         return position.isValid(for: gridSize) ? position : nil
     }

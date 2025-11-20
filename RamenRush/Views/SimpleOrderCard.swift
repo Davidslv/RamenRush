@@ -12,15 +12,10 @@ struct SimpleOrderCard: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            // Ingredient icon
-            Circle()
-                .fill(order.ingredient.placeholderColor)
-                .frame(width: 40, height: 40)
-                .overlay(
-                    Circle()
-                        .stroke(Color.white, lineWidth: 2)
-                )
-
+            // Ingredient emoji
+            Text(order.ingredient.emoji)
+                .font(.system(size: 40))
+            
             // Quantity
             Text(order.displayText)
                 .font(.headline)

@@ -100,24 +100,53 @@ enum IngredientType: String, Codable, CaseIterable, Identifiable {
         case .udon: return Color(hex: "#FFFEF7") // Udon White
         case .soba: return Color(hex: "#A67C52") // Soba Brown
         case .riceNoodles: return Color(hex: "#FFEFD5") // Rice Noodle
-
+        
         // Proteins
         case .chashu: return Color(hex: "#E8B4A4") // Pork Pink
         case .softBoiledEgg: return Color(hex: "#FFB800") // Egg Yolk
         case .tofu: return Color(hex: "#F5E6D3") // Tofu Beige
         case .tempuraShrimp: return Color(hex: "#FF6B35") // Shrimp Orange
-
+        
         // Vegetables
         case .greenOnions: return Color(hex: "#A8E6A1") // Green Onion Light
         case .nori: return Color(hex: "#1A1A1A") // Nori Black
         case .bambooShoots: return Color(hex: "#E8DCA0") // Bamboo Yellow
         case .bokChoy: return Color(hex: "#7CB342") // Bok Choy Green
-
+        
         // Bowls
         case .ramenBowl: return Color(hex: "#FFFFFF") // White
         case .donburiBowl: return Color(hex: "#1976D2") // Blue
         case .bentoBox: return Color(hex: "#8B4513") // Dark Brown
         case .sushiPlate: return Color(hex: "#FFFFFF") // White
+        }
+    }
+    
+    /// Emoji representation for the ingredient
+    var emoji: String {
+        switch self {
+        // Noodles
+        case .ramen: return "🍜"
+        case .udon: return "🍜"
+        case .soba: return "🍜"
+        case .riceNoodles: return "🍜"
+        
+        // Proteins
+        case .chashu: return "🥩"
+        case .softBoiledEgg: return "🥚"
+        case .tofu: return "🧈"
+        case .tempuraShrimp: return "🍤"
+        
+        // Vegetables
+        case .greenOnions: return "🥬"
+        case .nori: return "🍙"
+        case .bambooShoots: return "🥬"
+        case .bokChoy: return "🥬"
+        
+        // Bowls
+        case .ramenBowl: return "🥣"
+        case .donburiBowl: return "🍲"
+        case .bentoBox: return "🍱"
+        case .sushiPlate: return "🍽️"
         }
     }
 
