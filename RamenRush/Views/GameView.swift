@@ -12,6 +12,8 @@ struct GameView: View {
     @StateObject private var grid: GameGrid
     @StateObject private var gameState: GameState
     @State private var gameScene: GameScene?
+    @State private var showPauseMenu = false
+    @Environment(\.dismiss) var dismiss
 
     init() {
         // Create grid first, then game state that references it
@@ -50,6 +52,20 @@ struct GameView: View {
                         if let order = gameState.currentOrder {
                             OrderCard(order: order)
                         }
+                        
+                        // Pause Button
+                        Button(action: {
+                            showPauseMenu = true
+                            gameScene?.isPaused = true
+                        }) {
+                            Image(systemName: "pause.fill")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .frame(width: 44, height: 44)
+                                .background(Color(hex: "#8B6F47"))
+                                .clipShape(Circle())
+                        }
+                        .padding(.leading, 8)
                     }
                     .padding()
                     .background(Color(hex: "#FFF8E7").opacity(0.9))
@@ -123,6 +139,19 @@ struct GameView: View {
             .onChange(of: geometry.size) { oldSize, newSize in
                 gameScene?.size = newSize
             }
+            .overlay {
+                if showPauseMenu {
+                    PauseMenuView(
+                        isPresented: $showPauseMenu,
+                        onResume: {
+                            gameScene?.isPaused = false
+                        },
+                        onQuit: {
+                            dismiss()
+                        }
+                    )
+                }
+            }
         }
     }
 
@@ -138,24 +167,36 @@ struct OrderCard: View {
     let order: Order
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Order")
-                .font(.caption)
-                .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("Order")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
 
             ForEach(order.requiredIngredients, id: \.ingredient.id) { requirement in
-                HStack {
+                HStack(spacing: 6) {
                     Circle()
                         .fill(requirement.ingredient.placeholderColor)
-                        .frame(width: 16, height: 16)
+                        .frame(width: 18, height: 18)
+                        .overlay(
+                            Circle()
+                                .stroke(Color.white, lineWidth: 1.5)
+                        )
                     Text("\(requirement.quantity)x")
                         .font(.caption)
+                        .fontWeight(.medium)
                 }
             }
         }
-        .padding(8)
-        .background(Color.white.opacity(0.9))
-        .cornerRadius(8)
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.white.opacity(0.95))
+                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        )
     }
 }
 
