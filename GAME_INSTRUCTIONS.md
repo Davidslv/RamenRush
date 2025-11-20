@@ -33,7 +33,7 @@ The game board is a **4×4 grid** filled with different foods. Your goal is to s
 
 **But it needs to be an uninterrupted line of the same food.**
 
-✅ Valid line: 🍜 🍜 🍜 (3 ramen in a row)  
+✅ Valid line: 🍜 🍜 🍜 (3 ramen in a row)
 ❌ Invalid line: 🍜 🥚 🍜 (interrupted by egg)
 
 ### Matching Orders
@@ -173,7 +173,7 @@ You win when:
 ### Touch Controls
 - **Tap the grid** to select a line
 
-### Button Controls  
+### Button Controls
 - **↑↓←→** - Move cursor
 - **⟳** - Rotate between horizontal/vertical
 - **⏸** - Pause game
