@@ -19,10 +19,12 @@ Ramen Rush is a cozy puzzle/match-line game where you help Chef Hiro serve delic
 ## ✨ Features
 
 - **16 Unique Ingredients** - Unlock noodles, proteins, vegetables, and bowls as you progress
-- **Match-Line Gameplay** - Select horizontal or vertical lines of 4+ matching ingredients
-- **Order System** - Fulfill customer orders to earn stars and progress
+- **4×4 Grid Gameplay** - Match lines of ingredients, inspired by classic puzzle games
+- **Simple Order System** - Fulfill customer orders (x1, x2, or x3 of same ingredient)
+- **Touch & Button Controls** - Tap the grid directly or use arrow buttons
+- **Star Rewards** - Earn stars for completing orders
+- **Auto-Refill Grid** - Cleared cells automatically refill with new ingredients
 - **Progression System** - Unlock new ingredients at specific levels
-- **Beautiful Pixel Art Style** - Cozy, warm color palette inspired by Japanese ramen shops
 - **SpriteKit Rendering** - Smooth animations and responsive touch controls
 
 ## 🔧 Requirements
@@ -81,7 +83,7 @@ Or simply double-click `RamenRush.xcodeproj` in Finder.
 
 ```bash
 # Build and run on default simulator
-xcodebuild -project RamenRush.xcodeproj -scheme RamenRush -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 15' build
+xcodebuild -project RamenRush.xcodeproj -scheme RamenRush -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 16' build
 
 # Or use xcodebuild to build, then install via Xcode
 ```
@@ -89,9 +91,10 @@ xcodebuild -project RamenRush.xcodeproj -scheme RamenRush -sdk iphonesimulator -
 ### First Launch
 
 On first launch, the game will:
-- Initialize an 8×8 grid with random ingredients
-- Generate your first customer order
-- Display the game grid with placeholder colors (until sprites are added)
+- Initialize a **4×4 grid** with 4 random ingredients (matching original Pico-8 game)
+- Generate **4 customer orders** showing ingredient + quantity (x1, x2, or x3)
+- Display the game grid with ingredient emojis (🍜🥚🥩🥬)
+- Show order cards at the bottom of the screen
 
 ## 🧪 Running Tests
 
@@ -136,6 +139,7 @@ RamenRush/
 │   │   ├── GameGrid.swift
 │   │   ├── GameState.swift
 │   │   ├── Order.swift
+│   │   ├── SimpleOrder.swift
 │   │   └── ProgressionManager.swift
 │   ├── Game/                # SpriteKit game scene
 │   │   └── GameScene.swift
@@ -156,25 +160,41 @@ RamenRush/
 │   ├── ProgressionManagerTests.swift
 │   ├── OrderTests.swift
 │   └── GameStateTests.swift
-└── README.md
+├── README.md                # This file
+├── IPHONE_USER_GUIDE.md     # Detailed iPhone user guide
+├── TESTING_GUIDE.md         # Testing checklist
+└── FIX_SUMMARY.md           # Recent layout fixes
 ```
 
 ## 🎮 Game Mechanics
 
 ### How to Play
 
-1. **Select a Line**: Tap on the grid or use the cursor controls to select a horizontal or vertical line of 4 cells
-2. **Match Ingredients**: All 4 cells must contain the same ingredient to create a match
-3. **Fulfill Orders**: Match ingredients to complete customer orders shown at the top
+1. **Select a Line**: Tap on the grid or use the cursor controls to select a horizontal or vertical line of cells
+2. **Match Orders**: Select lines that match the customer orders shown at the bottom
+3. **Fulfill Orders**: Orders show ingredient + quantity (e.g., 🍜x2 means 2 ramen in a line)
 4. **Earn Stars**: Complete orders to earn stars and progress to the next level
-5. **Unlock Ingredients**: New ingredients unlock as you advance through levels
+5. **Auto-Refill**: After matching, cleared cells automatically refill with random ingredients
+6. **Unlock Ingredients**: New ingredients unlock as you advance through levels
 
 ### Controls
 
-- **Touch**: Tap on the grid to select a line starting at that position
-- **Arrow Buttons**: Move the cursor around the grid
-- **Rotate Button**: Switch between horizontal and vertical line selection
-- **Cursor**: Shows your current selection (red outline)
+- **Touch**: Tap on the grid to select a line at that position
+- **Arrow Buttons**: Move the cursor around the 4×4 grid (↑↓←→)
+- **Rotate Button**: Switch between horizontal and vertical line selection (⟳)
+- **Cursor**: Red outline shows your current selection
+- **Pause**: Tap [⏸] in top right to pause the game
+
+### Order System (Like Original Game)
+
+- **4 Order Cards** displayed at bottom of screen
+- Each order shows: **Ingredient Emoji + Quantity**
+  - **x1** = Select 1 of that ingredient
+  - **x2** = Select 2 of that ingredient in a line
+  - **x3** = Select 3 of that ingredient in a line
+- Match a line to an order to complete it
+- New orders appear as you complete them
+- Game starts with 4 basic ingredients: 🍜 🥚 🥩 🥬
 
 ### Ingredient Unlocks
 
@@ -205,10 +225,11 @@ RamenRush/
 ### Key Components
 
 #### Models
-- `IngredientType`: Enum defining all 16 ingredients with unlock levels
-- `GameGrid`: Manages the 8×8 game board and matching logic
-- `GameState`: Tracks level, stars, coins, and current order
-- `Order`: Represents customer orders with ingredient requirements
+- `IngredientType`: Enum defining all 16 ingredients with unlock levels and emojis
+- `GameGrid`: Manages the **4×4 game board** and matching logic
+- `GameState`: Tracks level, stars, coins, and current orders
+- `SimpleOrder`: Represents customer orders (ingredient + quantity)
+- `OrderManager`: Manages the 4 order cards (like original game)
 - `ProgressionManager`: Handles ingredient unlocking based on level
 
 #### Views
@@ -262,13 +283,23 @@ When sprites are ready:
 
 ### Runtime Issues
 
-**Grid not displaying**
-- Check that `GameState.startLevel()` is called
-- Verify grid initialization in `GameView.setupGameScene()`
+**Grid not displaying or cut off**
+- ✅ Fixed: Grid positioning updated in GameScene.swift (November 2025)
+- Grid should be centered between top HUD and bottom order cards
+- If still having issues, see `FIX_SUMMARY.md` for details
+
+**Grid underneath order cards**
+- ✅ Fixed: Grid positioning calculations corrected
+- Grid uses proper coordinate system with margins for UI elements
 
 **Touch not working**
 - Ensure SpriteKit scene is properly sized
 - Check that touch handling is enabled in `GameScene`
+- Try using arrow button controls instead
+
+**Cursor misaligned**
+- ✅ Fixed: Cursor positioning now matches grid exactly
+- All three positioning methods use consistent calculations
 
 ## 📝 License
 
@@ -278,12 +309,21 @@ When sprites are ready:
 
 [Add contribution guidelines here]
 
+## 📚 Additional Documentation
+
+- **[iPhone User Guide](IPHONE_USER_GUIDE.md)** - Step-by-step guide for playing on iPhone
+- **[Testing Guide](TESTING_GUIDE.md)** - Comprehensive testing checklist
+- **[Fix Summary](FIX_SUMMARY.md)** - Recent layout fixes and improvements
+- **[Project Documentation](RamenRush/Documentation/project.md)** - Detailed technical specs
+
 ## 📞 Support
 
 For issues, questions, or suggestions:
-- [Add contact information or issue tracker link]
+- Check the IPHONE_USER_GUIDE.md for gameplay help
+- Check TESTING_GUIDE.md for known issues
+- Review FIX_SUMMARY.md for recent updates
 
 ---
 
-**Made with 🍜 by [Your Name]**
+**Made with 🍜**
 

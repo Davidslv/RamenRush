@@ -3,10 +3,10 @@
 
 ## Game Identity
 
-**Official Name:** Ramen Rush  
-**Tagline:** *"Serve steaming bowls of happiness!"*  
-**Genre:** Puzzle / Match-Line  
-**Price:** $2.99 (Premium)  
+**Official Name:** Ramen Rush
+**Tagline:** *"Serve steaming bowls of happiness!"*
+**Genre:** Puzzle / Match-Line
+**Price:** $2.99 (Premium)
 **Rating:** 4+ (Perfect for kids & families)
 
 ---
@@ -703,16 +703,16 @@ Export as animation strip
 enum IngredientType: String, Codable, CaseIterable {
     // Noodles
     case ramen, udon, soba, riceNoodles
-    
+
     // Proteins
     case chashu, softBoiledEgg, tofu, tempuraShrimp
-    
+
     // Vegetables
     case greenOnions, nori, bambooShoots, bokChoy
-    
+
     // Bowls (special - these are the "containers")
     case ramenBowl, donburiBowl, bentoBox, sushiPlate
-    
+
     var category: IngredientCategory {
         switch self {
         case .ramen, .udon, .soba, .riceNoodles:
@@ -725,7 +725,7 @@ enum IngredientType: String, Codable, CaseIterable {
             return .bowls
         }
     }
-    
+
     var unlockLevel: Int {
         switch self {
         case .ramen, .chashu, .softBoiledEgg, .greenOnions, .ramenBowl:
@@ -754,7 +754,7 @@ enum IngredientType: String, Codable, CaseIterable {
             return 15
         }
     }
-    
+
     var displayName: String {
         switch self {
         case .ramen: return "Ramen"
@@ -789,17 +789,17 @@ struct ProgressionManager {
     static func unlockIngredients(
         forLevel level: Int
     ) -> [IngredientType] {
-        IngredientType.allCases.filter { 
-            $0.unlockLevel <= level 
+        IngredientType.allCases.filter {
+            $0.unlockLevel <= level
         }
     }
-    
+
     static func nextUnlock(currentLevel: Int) -> IngredientType? {
         IngredientType.allCases
             .filter { $0.unlockLevel > currentLevel }
             .min { $0.unlockLevel < $1.unlockLevel }
     }
-    
+
     static func progressToNextUnlock(
         currentLevel: Int
     ) -> (current: Int, needed: Int)? {
@@ -887,7 +887,7 @@ struct ProgressionManager {
 - OpenGameArt.org
 - Must credit in game
 
-**My Recommendation:** 
+**My Recommendation:**
 - Option 2 (licensed music) for quality
 - Option 3 (free SFX) from freesound.org
 - Total cost: ~$150
@@ -1063,7 +1063,7 @@ Text overlays for clarity
 **Afternoon:**
 - [ ] Import first two sprites
 - [ ] Create SpriteKit scene
-- [ ] Display sprites in 8×8 grid
+- [ ] Display sprites in 4x4 grid
 - [ ] Test on device
 
 **Time: 6-8 hours**

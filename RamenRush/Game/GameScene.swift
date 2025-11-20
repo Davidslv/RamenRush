@@ -51,12 +51,24 @@ class GameScene: SKScene {
     private func setupGrid() {
         // Center the 4x4 grid on screen, leave room for orders at bottom
         // With anchorPoint at (0.5, 0.5), coordinates are relative to center
-        // Negative Y is UP, Positive Y is DOWN
+        // Y-axis: positive is UP, negative is DOWN
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
+        let totalGridHeight = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
+
+        // Calculate starting positions (top-left corner of grid)
         let startX = -totalGridWidth / 2 + cellSize / 2
-        // Position grid in upper area, well above order cards
-        // startY is the TOP of the grid (row 0), positioned higher up
-        let startY = -size.height * 0.2 + cellSize / 2
+
+        // Position grid accounting for UI elements:
+        // Top HUD: ~80 points, Bottom UI: ~220 points (orders + controls)
+        // Available space: size.height - 300
+        // Center the grid in the available space, shifted up slightly
+        let topMargin: CGFloat = 80
+        let bottomMargin: CGFloat = 220
+        let availableHeight = size.height - topMargin - bottomMargin
+        let gridCenterY = (topMargin - bottomMargin) / 2
+
+        // startY is the TOP of the grid (row 0)
+        let startY = gridCenterY + totalGridHeight / 2
 
         gridNodes = []
 
@@ -163,8 +175,14 @@ class GameScene: SKScene {
         guard let cursor = cursorNode else { return }
 
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
+        let totalGridHeight = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
-        let startY = -size.height * 0.2 + cellSize / 2
+
+        // Match the positioning from setupGrid()
+        let topMargin: CGFloat = 80
+        let bottomMargin: CGFloat = 220
+        let gridCenterY = (topMargin - bottomMargin) / 2
+        let startY = gridCenterY + totalGridHeight / 2
 
         let x = startX + CGFloat(cursorPosition.column) * (cellSize + gridSpacing)
         let y = startY - CGFloat(cursorPosition.row) * (cellSize + gridSpacing)
@@ -231,9 +249,14 @@ class GameScene: SKScene {
 
     private func positionForLocation(_ location: CGPoint) -> GridPosition? {
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
+        let totalGridHeight = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2
-        // Match the grid setup position
-        let startY = -size.height * 0.2 + cellSize / 2
+
+        // Match the positioning from setupGrid()
+        let topMargin: CGFloat = 80
+        let bottomMargin: CGFloat = 220
+        let gridCenterY = (topMargin - bottomMargin) / 2
+        let startY = gridCenterY + totalGridHeight / 2
 
         let relativeX = location.x - startX
         let relativeY = startY - location.y
