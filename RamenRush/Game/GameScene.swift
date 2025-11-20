@@ -51,11 +51,12 @@ class GameScene: SKScene {
     private func setupGrid() {
         // Center the 4x4 grid on screen, leave room for orders at bottom
         // With anchorPoint at (0.5, 0.5), coordinates are relative to center
+        // Negative Y is UP, Positive Y is DOWN
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
-        // Position grid in upper-center portion (negative Y is up from center)
-        // Move it higher to be above order cards
-        let startY = -size.height * 0.25 + cellSize / 2
+        // Position grid in upper-center portion - use more negative value to move UP
+        // startY is the TOP of the grid (row 0)
+        let startY = -size.height * 0.35 + cellSize / 2
 
         gridNodes = []
 
@@ -163,7 +164,7 @@ class GameScene: SKScene {
 
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
-        let startY = -size.height * 0.25 + cellSize / 2
+        let startY = -size.height * 0.35 + cellSize / 2
 
         let x = startX + CGFloat(cursorPosition.column) * (cellSize + gridSpacing)
         let y = startY - CGFloat(cursorPosition.row) * (cellSize + gridSpacing)
