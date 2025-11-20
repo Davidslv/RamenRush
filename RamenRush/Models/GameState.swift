@@ -33,8 +33,22 @@ class GameState: ObservableObject {
         currentLevel = level
         updateAvailableIngredients()
         generateNewOrder()
-        // Fill grid with random ingredients
-        grid.fillEmptyCells(with: availableIngredients)
+        // Fill entire grid with random ingredients
+        fillGridWithIngredients()
+    }
+    
+    /// Fill the entire grid with random ingredients
+    private func fillGridWithIngredients() {
+        guard !availableIngredients.isEmpty else { return }
+        
+        // Clear and fill all cells
+        for row in 0..<GameGrid.defaultSize {
+            for col in 0..<GameGrid.defaultSize {
+                let position = GridPosition(row, col)
+                let randomIngredient = availableIngredients.randomElement()!
+                grid.setIngredient(randomIngredient, at: position)
+            }
+        }
     }
     
     /// Generate a new order

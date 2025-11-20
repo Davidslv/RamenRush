@@ -229,7 +229,14 @@ class GameScene: SKScene {
     private func checkMatches(at positions: [GridPosition]) {
         guard positions.count == 4,
               let firstCell = grid.cell(at: positions[0]),
-              let ingredient = firstCell.ingredient else { return }
+              let ingredient = firstCell.ingredient else {
+            // Deselect if invalid selection
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.grid.deselectAll()
+                self.updateGridDisplay()
+            }
+            return
+        }
         
         // Check if all positions have the same ingredient
         let allMatch = positions.allSatisfy { pos in
@@ -239,6 +246,8 @@ class GameScene: SKScene {
         if allMatch {
             // Create a match
             let match = LineMatch(positions: positions, ingredient: ingredient)
+            
+            // Process matches (this will clear cells and refill)
             gameState.processMatches([match])
             
             // Animate match
@@ -253,43 +262,26 @@ class GameScene: SKScene {
     }
     
     private func animateMatch(_ positions: [GridPosition]) {
-        // Simple animation: fade out and remove
+        // Simple animation: scale up, fade out
         for position in positions {
             guard let node = gridNodes[safe: position.row]?[safe: position.column] else { continue }
             
-            let fadeOut = SKAction.fadeOut(withDuration: 0.3)
-            let remove = SKAction.removeFromParent()
-            let sequence = SKAction.sequence([fadeOut, remove])
+            let scaleUp = SKAction.scale(to: 1.2, duration: 0.15)
+            let fadeOut = SKAction.fadeOut(withDuration: 0.15)
+            let scaleDown = SKAction.scale(to: 1.0, duration: 0.1)
+            let fadeIn = SKAction.fadeIn(withDuration: 0.1)
             
-            node.run(sequence) {
-                // Recreate node after animation
-                self.recreateCell(at: position)
-            }
+            let sequence = SKAction.sequence([scaleUp, fadeOut, scaleDown, fadeIn])
+            node.run(sequence)
         }
         
         // Update grid after animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.grid.deselectAll()
             self.updateGridDisplay()
         }
     }
     
-    private func recreateCell(at position: GridPosition) {
-        guard let node = createCellNode(at: position) as? SKSpriteNode else { return }
-        
-        let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
-        let startX = -totalGridWidth / 2 + cellSize / 2
-        let startY = totalGridWidth / 2 - cellSize / 2
-        
-        let x = startX + CGFloat(position.column) * (cellSize + gridSpacing)
-        let y = startY - CGFloat(position.row) * (cellSize + gridSpacing)
-        
-        node.position = CGPoint(x: x, y: y)
-        addChild(node)
-        
-        if gridNodes[safe: position.row] != nil {
-            gridNodes[position.row][position.column] = node
-        }
-    }
     
     // MARK: - Input Handling
     

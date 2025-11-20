@@ -9,7 +9,7 @@ import SwiftUI
 import SpriteKit
 
 struct GameView: View {
-    @StateObject private var grid = GameGrid()
+    @StateObject private var grid: GameGrid
     @StateObject private var gameState: GameState
     @State private var gameScene: GameScene?
     
@@ -18,10 +18,6 @@ struct GameView: View {
         let newGrid = GameGrid()
         _grid = StateObject(wrappedValue: newGrid)
         _gameState = StateObject(wrappedValue: GameState(grid: newGrid))
-    }
-    
-    private var sharedGrid: GameGrid {
-        grid
     }
     
     var body: some View {
@@ -131,7 +127,7 @@ struct GameView: View {
     }
     
     private func setupGameScene(size: CGSize) {
-        let scene = GameScene(size: size, grid: sharedGrid, gameState: gameState)
+        let scene = GameScene(size: size, grid: grid, gameState: gameState)
         scene.scaleMode = .aspectFill
         gameScene = scene
         gameState.startLevel(1)
