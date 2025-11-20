@@ -15,19 +15,19 @@ class GameState: ObservableObject {
     @Published var coins: Int = 0
     @Published var currentOrder: Order?
     @Published var availableIngredients: [IngredientType] = []
-    
+
     private let grid: GameGrid
-    
+
     init(grid: GameGrid) {
         self.grid = grid
         updateAvailableIngredients()
     }
-    
+
     /// Update available ingredients based on current level
     func updateAvailableIngredients() {
         availableIngredients = ProgressionManager.unlockIngredients(forLevel: currentLevel)
     }
-    
+
     /// Start a new level
     func startLevel(_ level: Int) {
         currentLevel = level
@@ -36,11 +36,11 @@ class GameState: ObservableObject {
         // Fill entire grid with random ingredients
         fillGridWithIngredients()
     }
-    
+
     /// Fill the entire grid with random ingredients
     private func fillGridWithIngredients() {
         guard !availableIngredients.isEmpty else { return }
-        
+
         // Clear and fill all cells
         for row in 0..<GameGrid.defaultSize {
             for col in 0..<GameGrid.defaultSize {
@@ -50,7 +50,7 @@ class GameState: ObservableObject {
             }
         }
     }
-    
+
     /// Generate a new order
     func generateNewOrder() {
         let difficulty = determineDifficulty(for: currentLevel)
@@ -60,7 +60,7 @@ class GameState: ObservableObject {
             difficulty: difficulty
         )
     }
-    
+
     /// Determine order difficulty based on level
     private func determineDifficulty(for level: Int) -> OrderDifficulty {
         switch level {
@@ -72,34 +72,34 @@ class GameState: ObservableObject {
             return .hard
         }
     }
-    
+
     /// Process matches and check if order is completed
     func processMatches(_ matches: [LineMatch]) {
         guard let order = currentOrder else { return }
-        
+
         // Clear matched cells
         grid.clearMatches(matches)
-        
+
         // Fill empty cells
         grid.fillEmptyCells(with: availableIngredients)
-        
+
         // Check if order is completed
         if order.canFulfill(with: matches) {
             completeOrder(order)
         }
     }
-    
+
     /// Complete an order and award rewards
     private func completeOrder(_ order: Order) {
         stars += order.reward.stars
         if let coinsReward = order.reward.coins {
             coins += coinsReward
         }
-        
+
         // Generate new order
         generateNewOrder()
     }
-    
+
     /// Advance to next level
     func advanceLevel() {
         currentLevel += 1

@@ -17,18 +17,18 @@ enum IngredientCategory: String, Codable {
 enum IngredientType: String, Codable, CaseIterable, Identifiable {
     // Noodles
     case ramen, udon, soba, riceNoodles
-    
+
     // Proteins
     case chashu, softBoiledEgg, tofu, tempuraShrimp
-    
+
     // Vegetables
     case greenOnions, nori, bambooShoots, bokChoy
-    
+
     // Bowls (special - these are the "containers")
     case ramenBowl, donburiBowl, bentoBox, sushiPlate
-    
+
     var id: String { rawValue }
-    
+
     var category: IngredientCategory {
         switch self {
         case .ramen, .udon, .soba, .riceNoodles:
@@ -41,7 +41,7 @@ enum IngredientType: String, Codable, CaseIterable, Identifiable {
             return .bowls
         }
     }
-    
+
     var unlockLevel: Int {
         switch self {
         case .ramen, .chashu, .softBoiledEgg, .greenOnions, .ramenBowl:
@@ -70,7 +70,7 @@ enum IngredientType: String, Codable, CaseIterable, Identifiable {
             return 15
         }
     }
-    
+
     var displayName: String {
         switch self {
         case .ramen: return "Ramen"
@@ -91,7 +91,7 @@ enum IngredientType: String, Codable, CaseIterable, Identifiable {
         case .sushiPlate: return "Sushi Plate"
         }
     }
-    
+
     /// Placeholder color for rendering until sprites are ready
     var placeholderColor: Color {
         switch self {
@@ -100,19 +100,19 @@ enum IngredientType: String, Codable, CaseIterable, Identifiable {
         case .udon: return Color(hex: "#FFFEF7") // Udon White
         case .soba: return Color(hex: "#A67C52") // Soba Brown
         case .riceNoodles: return Color(hex: "#FFEFD5") // Rice Noodle
-        
+
         // Proteins
         case .chashu: return Color(hex: "#E8B4A4") // Pork Pink
         case .softBoiledEgg: return Color(hex: "#FFB800") // Egg Yolk
         case .tofu: return Color(hex: "#F5E6D3") // Tofu Beige
         case .tempuraShrimp: return Color(hex: "#FF6B35") // Shrimp Orange
-        
+
         // Vegetables
         case .greenOnions: return Color(hex: "#A8E6A1") // Green Onion Light
         case .nori: return Color(hex: "#1A1A1A") // Nori Black
         case .bambooShoots: return Color(hex: "#E8DCA0") // Bamboo Yellow
         case .bokChoy: return Color(hex: "#7CB342") // Bok Choy Green
-        
+
         // Bowls
         case .ramenBowl: return Color(hex: "#FFFFFF") // White
         case .donburiBowl: return Color(hex: "#1976D2") // Blue
@@ -120,7 +120,7 @@ enum IngredientType: String, Codable, CaseIterable, Identifiable {
         case .sushiPlate: return Color(hex: "#FFFFFF") // White
         }
     }
-    
+
     /// Check if ingredient is unlocked at given level
     func isUnlocked(at level: Int) -> Bool {
         unlockLevel <= level

@@ -11,16 +11,16 @@ import Foundation
 struct GridCell: Codable {
     var ingredient: IngredientType?
     var isSelected: Bool = false
-    
+
     var isEmpty: Bool {
         ingredient == nil
     }
-    
+
     mutating func clear() {
         ingredient = nil
         isSelected = false
     }
-    
+
     mutating func setIngredient(_ ingredient: IngredientType) {
         self.ingredient = ingredient
     }

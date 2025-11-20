@@ -12,14 +12,14 @@ struct GameView: View {
     @StateObject private var grid: GameGrid
     @StateObject private var gameState: GameState
     @State private var gameScene: GameScene?
-    
+
     init() {
         // Create grid first, then game state that references it
         let newGrid = GameGrid()
         _grid = StateObject(wrappedValue: newGrid)
         _gameState = StateObject(wrappedValue: GameState(grid: newGrid))
     }
-    
+
     var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -31,7 +31,7 @@ struct GameView: View {
                     Color(hex: "#FFF8E7")
                         .ignoresSafeArea()
                 }
-                
+
                 // UI Overlay
                 VStack {
                     // Top HUD
@@ -44,18 +44,18 @@ struct GameView: View {
                                 .font(.subheadline)
                                 .foregroundColor(.yellow)
                         }
-                        
+
                         Spacer()
-                        
+
                         if let order = gameState.currentOrder {
                             OrderCard(order: order)
                         }
                     }
                     .padding()
                     .background(Color(hex: "#FFF8E7").opacity(0.9))
-                    
+
                     Spacer()
-                    
+
                     // Bottom Controls
                     HStack(spacing: 20) {
                         Button(action: {
@@ -68,7 +68,7 @@ struct GameView: View {
                                 .background(Color(hex: "#66BB6A"))
                                 .clipShape(Circle())
                         }
-                        
+
                         Button(action: {
                             gameScene?.moveCursor(direction: .left)
                         }) {
@@ -79,7 +79,7 @@ struct GameView: View {
                                 .background(Color(hex: "#66BB6A"))
                                 .clipShape(Circle())
                         }
-                        
+
                         Button(action: {
                             gameScene?.rotateCursor()
                         }) {
@@ -90,7 +90,7 @@ struct GameView: View {
                                 .background(Color(hex: "#FFB300"))
                                 .clipShape(Circle())
                         }
-                        
+
                         Button(action: {
                             gameScene?.moveCursor(direction: .right)
                         }) {
@@ -101,7 +101,7 @@ struct GameView: View {
                                 .background(Color(hex: "#66BB6A"))
                                 .clipShape(Circle())
                         }
-                        
+
                         Button(action: {
                             gameScene?.moveCursor(direction: .down)
                         }) {
@@ -125,7 +125,7 @@ struct GameView: View {
             }
         }
     }
-    
+
     private func setupGameScene(size: CGSize) {
         let scene = GameScene(size: size, grid: grid, gameState: gameState)
         scene.scaleMode = .aspectFill
@@ -136,13 +136,13 @@ struct GameView: View {
 
 struct OrderCard: View {
     let order: Order
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text("Order")
                 .font(.caption)
                 .foregroundColor(.secondary)
-            
+
             ForEach(order.requiredIngredients, id: \.ingredient.id) { requirement in
                 HStack {
                     Circle()

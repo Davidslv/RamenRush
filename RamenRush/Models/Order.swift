@@ -13,7 +13,7 @@ struct Order: Identifiable, Codable {
     let requiredIngredients: [IngredientRequirement]
     let reward: OrderReward
     var isCompleted: Bool
-    
+
     init(
         id: UUID = UUID(),
         requiredIngredients: [IngredientRequirement],
@@ -25,11 +25,11 @@ struct Order: Identifiable, Codable {
         self.reward = reward
         self.isCompleted = isCompleted
     }
-    
+
     /// Check if order can be fulfilled with given matches
     func canFulfill(with matches: [LineMatch]) -> Bool {
         var remainingRequirements = requiredIngredients
-        
+
         for match in matches {
             if let index = remainingRequirements.firstIndex(where: { req in
                 req.ingredient == match.ingredient && req.quantity > 0
@@ -40,18 +40,18 @@ struct Order: Identifiable, Codable {
                 }
             }
         }
-        
-        return remainingRequirements.isEmpty || 
+
+        return remainingRequirements.isEmpty ||
                remainingRequirements.allSatisfy { $0.quantity <= 0 }
     }
-    
+
     /// Calculate completion progress (0.0 to 1.0)
     func completionProgress(with matches: [LineMatch]) -> Double {
         var totalNeeded = requiredIngredients.reduce(0) { $0 + $1.quantity }
         var totalMatched = 0
-        
+
         var remainingRequirements = requiredIngredients
-        
+
         for match in matches {
             if let index = remainingRequirements.firstIndex(where: { req in
                 req.ingredient == match.ingredient && req.quantity > 0
@@ -61,7 +61,7 @@ struct Order: Identifiable, Codable {
                 remainingRequirements[index].quantity -= matched
             }
         }
-        
+
         guard totalNeeded > 0 else { return 1.0 }
         return min(1.0, Double(totalMatched) / Double(totalNeeded))
     }
@@ -71,7 +71,7 @@ struct Order: Identifiable, Codable {
 struct IngredientRequirement: Codable {
     let ingredient: IngredientType
     var quantity: Int
-    
+
     init(ingredient: IngredientType, quantity: Int) {
         self.ingredient = ingredient
         self.quantity = quantity
@@ -82,7 +82,7 @@ struct IngredientRequirement: Codable {
 struct OrderReward: Codable {
     let stars: Int
     let coins: Int?
-    
+
     init(stars: Int, coins: Int? = nil) {
         self.stars = stars
         self.coins = coins
@@ -99,7 +99,7 @@ struct OrderGenerator {
     ) -> Order {
         let unlockedIngredients = ProgressionManager.unlockIngredients(forLevel: level)
         let pool = availableIngredients.isEmpty ? unlockedIngredients : availableIngredients
-        
+
         guard !pool.isEmpty else {
             // Fallback order
             return Order(
@@ -109,7 +109,7 @@ struct OrderGenerator {
                 reward: OrderReward(stars: 1)
             )
         }
-        
+
         // Determine number of ingredients based on difficulty
         let ingredientCount: Int
         switch difficulty {
@@ -120,7 +120,7 @@ struct OrderGenerator {
         case .hard:
             ingredientCount = Int.random(in: 2...3)
         }
-        
+
         // Select random ingredients
         let selectedIngredients = Array(pool.shuffled().prefix(ingredientCount))
         let requirements = selectedIngredients.map { ingredient in
@@ -129,11 +129,11 @@ struct OrderGenerator {
                 quantity: Int.random(in: 4...8) // Match 4-8 cells
             )
         }
-        
+
         // Calculate reward based on difficulty
         let stars = difficulty.baseStars
         let coins = difficulty.baseCoins
-        
+
         return Order(
             requiredIngredients: requirements,
             reward: OrderReward(stars: stars, coins: coins)
@@ -143,7 +143,7 @@ struct OrderGenerator {
 
 enum OrderDifficulty {
     case easy, normal, hard
-    
+
     var baseStars: Int {
         switch self {
         case .easy: return 1
@@ -151,7 +151,7 @@ enum OrderDifficulty {
         case .hard: return 3
         }
     }
-    
+
     var baseCoins: Int? {
         switch self {
         case .easy: return nil
