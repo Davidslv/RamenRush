@@ -194,3 +194,7 @@ You win when:
 
 *For detailed step-by-step instructions, see [IPHONE_USER_GUIDE.md](IPHONE_USER_GUIDE.md)*
 
+
+SIDENOTE:
+
+new food would come from the top of the grid, players get to see half of the images to hint what's coming from the top. The elements will always com from the top, when elements fulfill the orders, all other elements shift down accordingly and the new food is integrated into the grid.
