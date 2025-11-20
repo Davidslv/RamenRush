@@ -37,7 +37,7 @@ struct GridPosition: Hashable, Codable {
         guard column + length <= gridSize else { return [] }
         return (0..<length).map { GridPosition(row, column + $0) }
     }
-    
+
     /// Get all positions in a vertical line starting from this position (always 4 for 4x4 grid)
     func verticalLine(length: Int = 4, gridSize: Int = 4) -> [GridPosition] {
         guard row + length <= gridSize else { return [] }

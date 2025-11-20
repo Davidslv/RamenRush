@@ -68,7 +68,7 @@ struct GameView: View {
                     .background(Color(hex: "#FFF8E7").opacity(0.9))
 
                     Spacer()
-                    
+
                     // Order Cards (at bottom like original)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 12) {

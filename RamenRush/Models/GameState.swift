@@ -15,7 +15,7 @@ class GameState: ObservableObject {
     @Published var coins: Int = 0
     @Published var availableIngredients: [IngredientType] = []
     @Published var lastOrderStarsEarned: Int = 0
-    
+
     let orderManager = OrderManager()
     private let grid: GameGrid
 
@@ -25,8 +25,14 @@ class GameState: ObservableObject {
     }
 
     /// Update available ingredients based on current level
+    /// Start with just 4 basic ingredients (like original has 4 pastries)
     func updateAvailableIngredients() {
-        availableIngredients = ProgressionManager.unlockIngredients(forLevel: currentLevel)
+        if currentLevel == 1 {
+            // Start with 4 basic ingredients
+            availableIngredients = [.ramen, .chashu, .softBoiledEgg, .greenOnions]
+        } else {
+            availableIngredients = ProgressionManager.unlockIngredients(forLevel: currentLevel)
+        }
     }
 
     /// Start a new level
@@ -59,32 +65,32 @@ class GameState: ObservableObject {
         if let fulfilledOrder = orderManager.fulfillOrder(with: match) {
             // Clear matched cells
             grid.clearMatches([match])
-            
+
             // Fill empty cells
             grid.fillEmptyCells(with: availableIngredients)
-            
+
             // Remove fulfilled order
             orderManager.removeOrder(fulfilledOrder)
-            
+
             // Add new order if needed
             if orderManager.orders.count < 4 {
                 let ingredient = availableIngredients.randomElement() ?? .ramen
                 let quantity = Int.random(in: 1...3)
                 orderManager.addOrder(SimpleOrder(ingredient: ingredient, quantity: quantity))
             }
-            
+
             // Award star for completing order
             stars += 1
             lastOrderStarsEarned = 1
-            
+
             // Reset after a moment
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 self.lastOrderStarsEarned = 0
             }
-            
+
             return true
         }
-        
+
         return false
     }
 

@@ -47,7 +47,7 @@ class GameScene: SKScene {
         backgroundColor = SKColor(hex: "#FFF8E7") // Cream Background
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
     }
-    
+
     private func setupGrid() {
         // Center the 4x4 grid on screen, leave room for orders at bottom
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing

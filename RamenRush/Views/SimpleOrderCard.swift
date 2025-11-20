@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SimpleOrderCard: View {
     let order: SimpleOrder
-    
+
     var body: some View {
         VStack(spacing: 4) {
             // Ingredient icon
@@ -20,7 +20,7 @@ struct SimpleOrderCard: View {
                     Circle()
                         .stroke(Color.white, lineWidth: 2)
                 )
-            
+
             // Quantity
             Text(order.displayText)
                 .font(.headline)
