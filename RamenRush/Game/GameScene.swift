@@ -163,7 +163,7 @@ class GameScene: SKScene {
 
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
-        let startY = totalGridWidth / 2 - cellSize / 2
+        let startY = -size.height * 0.25 + cellSize / 2
 
         let x = startX + CGFloat(cursorPosition.column) * (cellSize + gridSpacing)
         let y = startY - CGFloat(cursorPosition.row) * (cellSize + gridSpacing)
