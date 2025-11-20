@@ -7,7 +7,11 @@
 
 import SpriteKit
 import SwiftUI
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 class GameScene: SKScene {
     private let grid: GameGrid
@@ -181,6 +185,7 @@ class GameScene: SKScene {
 
     // MARK: - Touch Handling
 
+    #if os(iOS)
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         guard let touch = touches.first else { return }
         let location = touch.location(in: self)
@@ -190,6 +195,14 @@ class GameScene: SKScene {
             selectLine(at: position)
         }
     }
+    #elseif os(macOS)
+    override func mouseDown(with event: NSEvent) {
+        let location = event.location(in: self)
+        if let position = positionForLocation(location) {
+            selectLine(at: position)
+        }
+    }
+    #endif
 
     private func positionForLocation(_ location: CGPoint) -> GridPosition? {
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
