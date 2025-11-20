@@ -50,10 +50,6 @@ struct GameView: View {
 
                         Spacer()
 
-                        if let order = gameState.currentOrder {
-                            OrderCard(order: order)
-                        }
-
                         // Pause Button
                         Button(action: {
                             showPauseMenu = true
@@ -72,6 +68,18 @@ struct GameView: View {
                     .background(Color(hex: "#FFF8E7").opacity(0.9))
 
                     Spacer()
+                    
+                    // Order Cards (at bottom like original)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(gameState.orderManager.orders) { order in
+                                SimpleOrderCard(order: order)
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
+                    .frame(height: 100)
+                    .background(Color(hex: "#FFF8E7").opacity(0.95))
 
                     // Bottom Controls
                     HStack(spacing: 20) {

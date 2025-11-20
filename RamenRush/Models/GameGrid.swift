@@ -7,9 +7,9 @@
 
 import Foundation
 
-/// Manages the 8x8 game grid
+/// Manages the 4x4 game grid (matching original Pico-8 game)
 class GameGrid: ObservableObject {
-    static let defaultSize = 8
+    static let defaultSize = 4
 
     @Published private(set) var cells: [[GridCell]]
     private(set) var size: Int

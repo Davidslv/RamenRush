@@ -13,10 +13,10 @@ class GameState: ObservableObject {
     @Published var currentLevel: Int = 1
     @Published var stars: Int = 0
     @Published var coins: Int = 0
-    @Published var currentOrder: Order?
     @Published var availableIngredients: [IngredientType] = []
     @Published var lastOrderStarsEarned: Int = 0
-
+    
+    let orderManager = OrderManager()
     private let grid: GameGrid
 
     init(grid: GameGrid) {
@@ -33,7 +33,8 @@ class GameState: ObservableObject {
     func startLevel(_ level: Int) {
         currentLevel = level
         updateAvailableIngredients()
-        generateNewOrder()
+        // Generate 4 orders (like original)
+        orderManager.generateOrders(availableIngredients: availableIngredients, count: 4)
         // Fill entire grid with random ingredients
         fillGridWithIngredients()
     }
@@ -52,66 +53,46 @@ class GameState: ObservableObject {
         }
     }
 
-    /// Generate a new order
-    func generateNewOrder() {
-        let difficulty = determineDifficulty(for: currentLevel)
-        currentOrder = OrderGenerator.generateOrder(
-            level: currentLevel,
-            availableIngredients: availableIngredients,
-            difficulty: difficulty
-        )
-    }
-
-    /// Determine order difficulty based on level
-    private func determineDifficulty(for level: Int) -> OrderDifficulty {
-        switch level {
-        case 1...3:
-            return .easy
-        case 4...10:
-            return .normal
-        default:
-            return .hard
+    /// Process a match and check if it fulfills any order
+    func processMatch(_ match: LineMatch) -> Bool {
+        // Check if match fulfills any order
+        if let fulfilledOrder = orderManager.fulfillOrder(with: match) {
+            // Clear matched cells
+            grid.clearMatches([match])
+            
+            // Fill empty cells
+            grid.fillEmptyCells(with: availableIngredients)
+            
+            // Remove fulfilled order
+            orderManager.removeOrder(fulfilledOrder)
+            
+            // Add new order if needed
+            if orderManager.orders.count < 4 {
+                let ingredient = availableIngredients.randomElement() ?? .ramen
+                let quantity = Int.random(in: 1...3)
+                orderManager.addOrder(SimpleOrder(ingredient: ingredient, quantity: quantity))
+            }
+            
+            // Award star for completing order
+            stars += 1
+            lastOrderStarsEarned = 1
+            
+            // Reset after a moment
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.lastOrderStarsEarned = 0
+            }
+            
+            return true
         }
-    }
-
-    /// Process matches and check if order is completed
-    func processMatches(_ matches: [LineMatch]) {
-        guard let order = currentOrder else { return }
-
-        // Clear matched cells
-        grid.clearMatches(matches)
-
-        // Fill empty cells
-        grid.fillEmptyCells(with: availableIngredients)
-
-        // Check if order is completed
-        if order.canFulfill(with: matches) {
-            completeOrder(order)
-        }
-    }
-
-    /// Complete an order and award rewards
-    private func completeOrder(_ order: Order) {
-        lastOrderStarsEarned = order.reward.stars
-        stars += order.reward.stars
-        if let coinsReward = order.reward.coins {
-            coins += coinsReward
-        }
-
-        // Generate new order
-        generateNewOrder()
-
-        // Reset after a moment (for UI to display)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.lastOrderStarsEarned = 0
-        }
+        
+        return false
     }
 
     /// Advance to next level
     func advanceLevel() {
         currentLevel += 1
         updateAvailableIngredients()
-        generateNewOrder()
+        orderManager.generateOrders(availableIngredients: availableIngredients, count: 4)
     }
 }
 

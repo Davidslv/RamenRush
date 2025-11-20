@@ -17,8 +17,8 @@ struct GridPosition: Hashable, Codable {
         self.column = column
     }
 
-    /// Check if position is valid for an 8x8 grid
-    func isValid(for gridSize: Int = 8) -> Bool {
+    /// Check if position is valid for a 4x4 grid
+    func isValid(for gridSize: Int = 4) -> Bool {
         row >= 0 && row < gridSize && column >= 0 && column < gridSize
     }
 
@@ -32,14 +32,14 @@ struct GridPosition: Hashable, Codable {
         ]
     }
 
-    /// Get all positions in a horizontal line starting from this position
-    func horizontalLine(length: Int, gridSize: Int = 8) -> [GridPosition] {
+    /// Get all positions in a horizontal line starting from this position (always 4 for 4x4 grid)
+    func horizontalLine(length: Int = 4, gridSize: Int = 4) -> [GridPosition] {
         guard column + length <= gridSize else { return [] }
         return (0..<length).map { GridPosition(row, column + $0) }
     }
-
-    /// Get all positions in a vertical line starting from this position
-    func verticalLine(length: Int, gridSize: Int = 8) -> [GridPosition] {
+    
+    /// Get all positions in a vertical line starting from this position (always 4 for 4x4 grid)
+    func verticalLine(length: Int = 4, gridSize: Int = 4) -> [GridPosition] {
         guard row + length <= gridSize else { return [] }
         return (0..<length).map { GridPosition(row + $0, column) }
     }

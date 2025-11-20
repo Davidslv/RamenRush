@@ -21,10 +21,10 @@ class GameScene: SKScene {
     private var cursorPosition: GridPosition = GridPosition(0, 0)
     private var isHorizontal: Bool = true
 
-    // Grid configuration
-    private let cellSize: CGFloat = 50
-    private let gridSpacing: CGFloat = 2
-    private let gridSize: Int = 8
+    // Grid configuration - 4x4 grid like original
+    private let cellSize: CGFloat = 60
+    private let gridSpacing: CGFloat = 4
+    private let gridSize: Int = 4
 
     init(size: CGSize, grid: GameGrid, gameState: GameState) {
         self.grid = grid
@@ -47,11 +47,12 @@ class GameScene: SKScene {
         backgroundColor = SKColor(hex: "#FFF8E7") // Cream Background
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
     }
-
+    
     private func setupGrid() {
+        // Center the 4x4 grid on screen, leave room for orders at bottom
         let totalGridWidth = CGFloat(gridSize) * (cellSize + gridSpacing) - gridSpacing
         let startX = -totalGridWidth / 2 + cellSize / 2
-        let startY = totalGridWidth / 2 - cellSize / 2
+        let startY = size.height * 0.3 - cellSize / 2  // Position grid in upper portion
 
         gridNodes = []
 
@@ -258,14 +259,20 @@ class GameScene: SKScene {
         }
 
         if allMatch {
-            // Create a match
+            // Create a match (always length 4 for 4x4 grid)
             let match = LineMatch(positions: positions, ingredient: ingredient)
 
-            // Process matches (this will clear cells and refill)
-            gameState.processMatches([match])
-
-            // Animate match
-            animateMatch(positions)
+            // Check if this match fulfills any order
+            if gameState.processMatch(match) {
+                // Animate match
+                animateMatch(positions)
+            } else {
+                // Match doesn't fulfill any order - show error feedback
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self.grid.deselectAll()
+                    self.updateGridDisplay()
+                }
+            }
         } else {
             // Deselect after a delay
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
